@@ -50,5 +50,16 @@ class TugasAkhir extends Model
         return $this->belongsTo(Mahasiswa::class, 'mahasiswa_id');
     }
     // --- AKHIR FUNGSI YANG HILANG ---
+public function lstas() // <-- Ganti nama jadi plural
+    {
+        return $this->hasMany(Lsta::class, 'tugas_akhir_id');
+    }
 
+    /**
+     * Mendapatkan SEMUA jadwal Sidang yang terkait dengan TA ini.
+     */
+    public function sidangs() // <-- Ganti nama jadi plural
+    {
+        return $this->hasMany(Sidang::class, 'tugas_akhir_id');
+    }
 }

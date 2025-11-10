@@ -5,20 +5,23 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PengajuanSidang extends Model
+class BerkasTa extends Model
 {
     use HasFactory;
-    
-    protected $table = 'pengajuan_sidangs';
 
     /**
-     * Kolom yang boleh diisi (mass assignable)
+     * Nama tabel (karena Laravel akan menebak 'berkas_tas')
+     */
+    protected $table = 'berkas_tas';
+
+    /**
+     * Kolom yang boleh diisi (untuk keamanan)
      */
     protected $fillable = [
         'tugas_akhir_id',
-        'path_buku_skripsi',
-        'path_khs',
-        'path_transkrip',
+        'nama_file_asli',
+        'path_penyimpanan',
+        'tipe_berkas',
         'status_validasi',
         'catatan_validasi',
         'validator_id',
@@ -26,28 +29,15 @@ class PengajuanSidang extends Model
     ];
 
     /**
-     * Relasi: Pengajuan ini milik TA mana.
+     * Berkas ini milik Tugas Akhir mana.
      */
-
-    public function lstas()
-    {
-        return $this->hasMany(Lsta::class, 'pengajuan_sidang_id');
-    }
-
-    /**
-     * Relasi: Sidang yang dibuat dari pengajuan ini
-     */
-    public function sidangs()
-    {
-        return $this->hasMany(Sidang::class, 'pengajuan_sidang_id');
-    }
     public function tugasAkhir()
     {
         return $this->belongsTo(TugasAkhir::class, 'tugas_akhir_id');
     }
 
     /**
-     * Relasi: Siapa staf yang memvalidasi.
+     * Staf yang memvalidasi berkas ini.
      */
     public function validator()
     {
