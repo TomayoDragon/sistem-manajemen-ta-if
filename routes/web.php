@@ -4,7 +4,9 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Mahasiswa\DashboardController; // <-- Import Controller
 use App\Http\Controllers\Dosen\DashboardController as DosenDashboardController;
-
+use App\Http\Controllers\Mahasiswa\UploadController;
+use App\Http\Controllers\Staff\DashboardController as StaffDashboardController;
+use App\Http\Controllers\Staff\ValidasiController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -25,9 +27,9 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-        Route::get('/upload', function () {
-            return 'Halaman Upload Berkas TA (Soon)';
-        })->name('upload');
+        // RUTE INI SUDAH BENAR:
+        Route::get('/upload', [UploadController::class, 'create'])->name('upload');
+        Route::post('/upload', [UploadController::class, 'store'])->name('upload.store');
 
         Route::get('/sidang', function () {
             return 'Halaman Sidang / LSTA (Soon)';
@@ -50,13 +52,20 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [DosenDashboardController::class, 'index'])->name('dashboard');
 
     });
-    // --- GRUP STAFF ---
     Route::middleware(['role:staff'])->prefix('staff')->name('staff.')->group(function () {
-        Route::get('/dashboard', function () {
-            return 'Ini adalah Dashboard Staff.';
-        })->name('dashboard');
-    });
 
+        Route::get('/dashboard', [StaffDashboardController::class, 'index'])->name('dashboard');
+
+        // GANTI RUTE PLACEHOLDER INI:
+        // Route::get('/validasi/{id}/review', function ($id) {
+        //     return "Halaman review untuk Pengajuan ID: $id (Soon)";
+        // })->name('validasi.review');
+
+        // DENGAN 3 RUTE BARU INI:
+        Route::get('/validasi/{id}/review', [ValidasiController::class, 'show'])->name('validasi.review');
+        Route::post('/validasi/{id}/process', [ValidasiController::class, 'process'])->name('validasi.process');
+        Route::get('/validasi/{pengajuan}/download/{tipe}', [ValidasiController::class, 'downloadFile'])->name('validasi.download');
+    });
     // --- GRUP ADMIN ---
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', function () {

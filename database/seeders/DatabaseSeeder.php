@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
         // ==========================================================
 
         // Buat Dosen Joko (Dosbing 1 James)
-        $dosen_joko = \App\Models\Dosen::factory()->create([
+        $dosen_joko = Dosen::factory()->create([
             'npk' => '12345678',
             'nama_lengkap' => 'Dr. Joko Siswantoro',
         ]);
@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Buat Dosen Ahmad (Dosbing 2 James)
-        $dosen_ahmad = \App\Models\Dosen::factory()->create([
+        $dosen_ahmad = Dosen::factory()->create([
             'npk' => '11223344',
             'nama_lengkap' => 'Ahmad Miftah Fajrin, M.Kom.',
         ]);
