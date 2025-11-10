@@ -27,16 +27,16 @@ return new class extends Migration
             // onDelete('set null') berarti jika profil (misal mahasiswa) dihapus,
             // akun user-nya tetap ada, tapi relasinya jadi null.
             $table->foreignId('mahasiswa_id')->nullable()->unique()
-                  ->constrained('mahasiswa')->onDelete('set null');
+                  ->constrained('mahasiswas')->onDelete('set null');
                   
             $table->foreignId('dosen_id')->nullable()->unique()
-                  ->constrained('dosen')->onDelete('set null');
+                  ->constrained('dosens')->onDelete('set null');
                   
             $table->foreignId('staff_id')->nullable()->unique()
                   ->constrained('staff')->onDelete('set null');
                   
             $table->foreignId('admin_id')->nullable()->unique()
-                  ->constrained('admin')->onDelete('set null');
+                  ->constrained('admins')->onDelete('set null');
 
             $table->rememberToken();
             $table->timestamps();

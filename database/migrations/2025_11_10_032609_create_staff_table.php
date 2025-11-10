@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('staff', function (Blueprint $table) {
             $table->id();
+
+            // PASTIKAN BARIS INI ADA:
+            $table->string('npk', 20)->unique();
+
+            $table->string('nama_lengkap');
             $table->timestamps();
         });
     }

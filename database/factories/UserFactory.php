@@ -2,43 +2,101 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
+use App\Models\Mahasiswa;
+use App\Models\Dosen;
+use App\Models\Staff;
+use App\Models\Admin;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
- */
 class UserFactory extends Factory
 {
     /**
-     * The current password being used by the factory.
+     * Kata sandi default untuk semua user yang dibuat factory.
      */
     protected static ?string $password;
 
     /**
      * Define the model's default state.
-     *
-     * @return array<string, mixed>
      */
     public function definition(): array
     {
+        // Ini adalah state default. 
+        // Sebaiknya, user selalu dibuat dengan salah satu state peran di bawah.
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
+            'login_id' => $this->faker->unique()->userName(),
+            'email' => $this->faker->unique()->safeEmail(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'mahasiswa_id' => null,
+            'dosen_id' => null,
+            'staff_id' => null,
+            'admin_id' => null,
         ];
     }
 
     /**
-     * Indicate that the model's email address should be unverified.
+     * Membuat state user sebagai MAHASISWA.
      */
-    public function unverified(): static
+    public function mahasiswa(): Factory
     {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
+        return $this->state(function (array $attributes) {
+            // 1. Buat profil mahasiswa baru
+            $mahasiswa = Mahasiswa::factory()->create();
+            
+            // 2. Kembalikan data user yang sesuai
+            return [
+                'mahasiswa_id' => $mahasiswa->id,
+                'login_id' => $mahasiswa->nrp, // Login ID = NRP
+                'email' => $mahasiswa->nrp . '@student.ubaya.ac.id', // Email dummy
+            ];
+        });
+    }
+
+    /**
+     * Membuat state user sebagai DOSEN.
+     */
+    public function dosen(): Factory
+    {
+        return $this->state(function (array $attributes) {
+            $dosen = Dosen::factory()->create();
+            return [
+                'dosen_id' => $dosen->id,
+                'login_id' => $dosen->npk, // Login ID = NPK
+                'email' => $dosen->npk . '@ubaya.ac.id', // Email dummy
+            ];
+        });
+    }
+
+    /**
+     * Membuat state user sebagai STAFF.
+     */
+    public function staff(): Factory
+    {
+        return $this->state(function (array $attributes) {
+            $staff = Staff::factory()->create();
+            return [
+                'staff_id' => $staff->id,
+                'login_id' => $staff->npk, // Login ID = NPK
+                'email' => $staff->npk . '@ubaya.ac.id', // Email dummy
+            ];
+        });
+    }
+
+    /**
+     * Membuat state user sebagai ADMIN.
+     */
+    public function admin(): Factory
+    {
+        return $this->state(function (array $attributes) {
+            $admin = Admin::factory()->create();
+            return [
+                'admin_id' => $admin->id,
+                'login_id' => $admin->username, // Login ID = Username
+                'email' => $admin->username . '@admin.sistem.id', // Email dummy
+            ];
+        });
     }
 }
