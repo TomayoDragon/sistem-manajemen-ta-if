@@ -13,32 +13,50 @@ Route::get('/dashboard', function () {
 
 Route::middleware(['auth'])->group(function () {
 
-    // Rute untuk Mahasiswa
-    Route::get('/mahasiswa/dashboard', function () {
-        return 'Ini adalah Dashboard Mahasiswa. (Halaman 404 sudah hilang!)';
-    })->name('mahasiswa.dashboard'); // Kita beri nama untuk nanti
+    // --- GRUP MAHASISWA ---
+    Route::middleware(['role:mahasiswa'])->prefix('mahasiswa')->name('mahasiswa.')->group(function () {
 
-    // Rute untuk Dosen
-    Route::get('/dosen/dashboard', function () {
-        return 'Ini adalah Dashboard Dosen.';
-    })->name('dosen.dashboard');
+        Route::get('/dashboard', function () {
+            return 'Ini adalah Dashboard Mahasiswa. (Halaman 404 sudah hilang!)';
+        })->name('dashboard');
 
-    // Rute untuk Staff
-    Route::get('/staff/dashboard', function () {
-        return 'Ini adalah Dashboard Staff.';
-    })->name('staff.dashboard');
+        // Nanti rute mahasiswa lain (misal: upload berkas) bisa ditaruh di sini
+        // Route::get('/upload', ...)->name('upload');
 
-    // Rute untuk Admin
-    Route::get('/admin/dashboard', function () {
-        return 'Ini adalah Dashboard Admin.';
-    })->name('admin.dashboard');
+    });
+
+    // --- GRUP DOSEN ---
+    Route::middleware(['role:dosen'])->prefix('dosen')->name('dosen.')->group(function () {
+
+        Route::get('/dashboard', function () {
+            return 'Ini adalah Dashboard Dosen.';
+        })->name('dashboard');
+
+    });
+
+    // --- GRUP STAFF ---
+    Route::middleware(['role:staff'])->prefix('staff')->name('staff.')->group(function () {
+
+        Route::get('/dashboard', function () {
+            return 'Ini adalah Dashboard Staff.';
+        })->name('dashboard');
+
+    });
+
+    // --- GRUP ADMIN ---
+    Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
+
+        Route::get('/dashboard', function () {
+            return 'Ini adalah Dashboard Admin.';
+        })->name('dashboard');
+
+    });
 
 });
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

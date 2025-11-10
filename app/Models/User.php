@@ -15,7 +15,26 @@ class User extends Authenticatable
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
+     * @param string $roleName (Contoh: 'mahasiswa', 'dosen')
+     * @return bool
      */
+
+    public function hasRole(string $roleName): bool
+    {
+        switch ($roleName) {
+            case 'mahasiswa':
+                return $this->mahasiswa_id !== null;
+            case 'dosen':
+                return $this->dosen_id !== null;
+            case 'staff':
+                return $this->staff_id !== null;
+            case 'admin':
+                return $this->admin_id !== null;
+            default:
+                return false;
+        }
+    }
+
     protected $fillable = [
         'login_id',
         'email',
