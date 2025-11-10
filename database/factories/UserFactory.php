@@ -10,7 +10,7 @@ use App\Models\Admin;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-
+use App\Models\TugasAkhir;
 class UserFactory extends Factory
 {
     /**
@@ -40,21 +40,43 @@ class UserFactory extends Factory
     /**
      * Membuat state user sebagai MAHASISWA.
      */
-    public function mahasiswa(): Factory
+/**
+     * Membuat state user sebagai MAHASISWA.
+     */
+   public function mahasiswa(): Factory
     {
         return $this->state(function (array $attributes) {
-            // 1. Buat profil mahasiswa baru
             $mahasiswa = Mahasiswa::factory()->create();
-            
-            // 2. Kembalikan data user yang sesuai
             return [
                 'mahasiswa_id' => $mahasiswa->id,
-                'login_id' => $mahasiswa->nrp, // Login ID = NRP
-                'email' => $mahasiswa->nrp . '@student.ubaya.ac.id', // Email dummy
+                'login_id' => $mahasiswa->nrp,
+                'email' => $mahasiswa->nrp . '@student.ubaya.ac.id',
             ];
         });
     }
 
+    /**
+     * Menambahkan state untuk membuat Tugas Akhir.
+     * HARUS dipanggil SETELAH state 'mahasiswa()'.
+     */
+    public function withTugasAkhir(): Factory
+    {
+        return $this->afterCreating(function (User $user) {
+            // Pastikan ini hanya berjalan jika user adalah mahasiswa
+            if ($user->mahasiswa_id) {
+                // Ambil 2 ID Dosen secara acak dari database
+                $dosens = Dosen::inRandomOrder()->take(2)->pluck('id');
+
+                if ($dosens->count() == 2) {
+                    TugasAkhir::factory()->create([
+                        'mahasiswa_id' => $user->mahasiswa_id,
+                        'dosen_pembimbing_1_id' => $dosens[0],
+                        'dosen_pembimbing_2_id' => $dosens[1],
+                    ]);
+                }
+            }
+        });
+    }
     /**
      * Membuat state user sebagai DOSEN.
      */

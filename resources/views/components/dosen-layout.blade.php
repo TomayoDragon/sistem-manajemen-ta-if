@@ -266,33 +266,14 @@
 
             <ul class="sidebar-nav">
                 <li>
-                    <a href="{{ route('mahasiswa.dashboard') }}"
-                        class="{{ request()->routeIs('mahasiswa.dashboard') ? 'active' : '' }}">
+                    <a href="{{ route('dosen.dashboard') }}"
+                        class="{{ request()->routeIs('dosen.dashboard') ? 'active' : '' }}">
                         <i class="fa-solid fa-house"></i>
                         Dashboard
                     </a>
                 </li>
-                <li>
-                    <a href="{{ route('mahasiswa.upload') }}"
-                        class="{{ request()->routeIs('mahasiswa.upload') ? 'active' : '' }}">
-                        <i class="fa-solid fa-upload"></i>
-                        Upload Berkas TA
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('mahasiswa.sidang') }}"
-                        class="{{ request()->routeIs('mahasiswa.sidang') ? 'active' : '' }}">
-                        <i class="fa-solid fa-clock"></i>
-                        Sidang / LSTA
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('mahasiswa.signature') }}"
-                        class="{{ request()->routeIs('mahasiswa.signature') ? 'active' : '' }}">
-                        <i class="fa-solid fa-signature"></i>
-                        Digital Signature
-                    </a>
-                </li>
+               
+            
             </ul>
         </nav>
 
@@ -304,8 +285,8 @@
 
                     <button @click="open = ! open" class="user-info-trigger">
                         <div class="user-details">
-                            <div class="user-name">{{ Auth::user()->mahasiswa->nama_lengkap ?? 'Nama Mahasiswa' }}</div>
-                            <div class="user-nrp">{{ Auth::user()->mahasiswa->nrp ?? '1604XXXXX' }}</div>
+                            <div class="user-name">{{ Auth::user()->dosen->nama_lengkap ?? 'Nama Dosen' }}</div>
+                            <div class="user-nrp">{{ Auth::user()->dosen->npk ?? '11XXXXXX' }}</div>
                         </div>
                         <div class="user-avatar"></div>
                     </button>
