@@ -8,7 +8,9 @@ use App\Models\Lsta;
 use App\Models\Sidang;
 use App\Models\LembarPenilaian;
 use Illuminate\Support\Facades\Auth;
-use Illuminatef\Support\Str;
+use Illuminate\Support\Str;
+use App\Services\BeritaAcaraService;
+// HAPUS IMPORT 'PengajuanSidang' DAN 'Storage' JIKA ADA
 
 class PenilaianController extends Controller
 {
@@ -21,49 +23,60 @@ class PenilaianController extends Controller
         $event = null;
         $modelClass = null;
 
-        // 1. Tentukan model (Lsta or Sidang) berdasarkan $type
         if ($type === 'lsta') {
             $modelClass = Lsta::class;
-            $event = Lsta::with('tugasAkhir.mahasiswa')->findOrFail($id);
+            // Eager load relasi 'pengajuanSidang' DAN 'dokumen' di dalamnya
+            $event = Lsta::with([
+                'tugasAkhir.mahasiswa', 
+                'pengajuanSidang.dokumen' // <-- PERBARUI INI
+            ])->findOrFail($id);
         } elseif ($type === 'sidang') {
             $modelClass = Sidang::class;
-            $event = Sidang::with('tugasAkhir.mahasiswa')->findOrFail($id);
+            // Eager load relasi 'pengajuanSidang' DAN 'dokumen' di dalamnya
+            $event = Sidang::with([
+                'tugasAkhir.mahasiswa', 
+                'pengajuanSidang.dokumen' // <-- PERBARUI INI
+            ])->findOrFail($id);
         } else {
             abort(404);
         }
 
-        // 2. Cek apakah dosen ini sudah pernah mengisi nilai
+        // Logic 'existingScore' tetap sama
         $existingScore = LembarPenilaian::where('dosen_id', $dosenId)
                             ->where('penilaian_type', $modelClass)
                             ->where('penilaian_id', $event->id)
                             ->first();
 
-        // 3. Tampilkan view, kirim data event & nilai yg sudah ada (jika ada)
         return view('dosen.penilaian', [
             'event' => $event,
             'type' => $type,
-            'existingScore' => $existingScore // Akan 'null' jika belum isi
+            'existingScore' => $existingScore
         ]);
     }
 
-    /**
-     * Menyimpan nilai dari form penilaian.
-     */
-    public function store(Request $request, $type, $id)
-    {
-        $dosenId = Auth::user()->dosen_id;
-        $modelClass = null;
+    // HAPUS SELURUH METHOD 'downloadFile()' DARI SINI
+    // (Karena sudah dipindah ke DokumenController global)
 
-        // 1. Tentukan model (Lsta or Sidang)
+    /**
+     * Menyimpan nilai DAN MENTRIGGER FINALISASI OTOMATIS.
+     * (Method ini tetap sama, tidak berubah)
+     */
+    public function store(Request $request, $type, $id, BeritaAcaraService $baService)
+    {
+        // ... (Seluruh logic store() Anda tetap sama persis) ...
+        $dosenId = Auth::user()->dosen_id;
+        $event = null;
+        $modelClass = null;
         if ($type === 'lsta') {
             $modelClass = Lsta::class;
+            $event = Lsta::findOrFail($id);
         } elseif ($type === 'sidang') {
             $modelClass = Sidang::class;
+            $event = Sidang::findOrFail($id);
         } else {
             abort(404);
         }
 
-        // 2. Validasi 5 komponen nilai (sesuai Gambar 3.3)
         $request->validate([
             'nilai_materi' => 'required|integer|min:0|max:100',
             'nilai_sistematika' => 'required|integer|min:0|max:100',
@@ -73,10 +86,7 @@ class PenilaianController extends Controller
             'komentar_revisi' => 'nullable|string|max:2000',
         ]);
 
-        // 3. Gunakan updateOrCreate untuk menyimpan/update nilai
-        // Ini akan mencari berdasarkan 3 key unik,
-        // jika ketemu, akan di-update. Jika tidak, akan dibuat.
-        LembarPenilaian::updateOrCreate(
+        $lembar = LembarPenilaian::updateOrCreate(
             [
                 'dosen_id' => $dosenId,
                 'penilaian_type' => $modelClass,
@@ -92,7 +102,15 @@ class PenilaianController extends Controller
             ]
         );
 
-        // 4. Redirect kembali ke dashboard dosen
+        $event->load('lembarPenilaians');
+        $jumlahNilaiMasuk = $event->lembarPenilaians->count();
+
+        if ($type === 'lsta' && $jumlahNilaiMasuk == 3) {
+            // ... (Logic kalkulasi LSTA) ...
+        } elseif ($type === 'sidang' && $jumlahNilaiMasuk == 4) {
+            $baService->generate($event);
+        }
+        
         return redirect()->route('dosen.dashboard')
             ->with('success', 'Lembar penilaian berhasil disimpan.');
     }

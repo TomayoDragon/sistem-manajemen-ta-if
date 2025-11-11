@@ -23,6 +23,7 @@ class Lsta extends Model {
         return $this->belongsTo(Dosen::class, 'dosen_penguji_id');
     }
 
+   
     public function lembarPenilaians()
     {
         return $this->morphMany(LembarPenilaian::class, 'penilaian');

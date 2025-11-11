@@ -25,7 +25,7 @@ class SidangController extends Controller
                 ->with('error', 'Anda belum memiliki data Tugas Akhir.');
         }
 
-        // 3. Ambil pengajuan TERBARU untuk cek status
+        // 3. Ambil pengajuan terakhir untuk cek status
         $pengajuanTerbaru = $tugasAkhir->pengajuanSidangs()
                                      ->latest()
                                      ->first();
@@ -34,19 +34,24 @@ class SidangController extends Controller
         $lstaTerbaru = null;
         $sidangTerbaru = null;
 
-        // 5. HANYA JIKA status = TERIMA, cari jadwal TERBARU
+        // 5. HANYA JIKA status = TERIMA, cari jadwalnya
         if ($pengajuanTerbaru && $pengajuanTerbaru->status_validasi == 'TERIMA') {
-            // Ambil jadwal LSTA terbaru (jika ada)
+            
             $lstaTerbaru = $tugasAkhir->lstas()->latest()->first();
-            // Ambil jadwal Sidang terbaru (jika ada)
-            $sidangTerbaru = $tugasAkhir->sidangs()->latest()->first();
+            
+            // --- PERBARUI BARIS INI ---
+            // Ambil jadwal Sidang terbaru DAN data Berita Acaranya (jika ada)
+            $sidangTerbaru = $tugasAkhir->sidangs()
+                                     ->with('beritaAcara') // Eager-load relasi Berita Acara
+                                     ->latest()
+                                     ->first();
         }
 
         // 6. Kirim semua data ke view
         return view('mahasiswa.sidang', [
             'pengajuanTerbaru' => $pengajuanTerbaru,
-            'lsta' => $lstaTerbaru, // Kirim LSTA terbaru
-            'sidang' => $sidangTerbaru, // Kirim Sidang terbaru
+            'lsta' => $lstaTerbaru,
+            'sidang' => $sidangTerbaru,
         ]);
     }
 }

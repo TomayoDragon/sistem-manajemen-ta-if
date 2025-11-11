@@ -23,4 +23,9 @@ class Dosen extends Model
     {
         return $this->hasMany(TugasAkhir::class, 'dosen_pembimbing_2_id');
     }
+
+    public function lembarPenilaians()
+    {
+        return $this->hasMany(LembarPenilaian::class, 'dosen_id');
+    }
 }

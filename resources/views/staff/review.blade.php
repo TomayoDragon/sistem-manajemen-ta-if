@@ -6,7 +6,7 @@
     <style>
         .detail-grid {
             display: grid;
-            grid-template-columns: 1fr 2fr;
+            grid-template-columns: 1fr 2fr; /* 2 kolom */
             gap: 20px;
         }
         .detail-box {
@@ -39,16 +39,25 @@
             font-size: 1.1rem;
         }
 
+        /* Style Link Download (baru) */
+        .file-list-header {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+            margin-top: 25px; /* Jarak dari 'Ruangan' */
+            margin-bottom: 10px;
+        }
         .file-list a {
             display: block;
-            padding: 15px 20px;
-            background-color: #fafdff;
-            border: 1px solid #0a2e6c;
+            padding: 12px 15px;
+            background-color: #f4f7f6;
+            border: 1px solid #ddd;
             border-radius: 8px;
             text-decoration: none;
             color: #0a2e6c;
             font-weight: 700;
-            margin-bottom: 10px;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
             transition: background-color 0.2s;
         }
         .file-list a:hover {
@@ -77,12 +86,24 @@
             border-radius: 8px;
         }
         .btn-approve {
-            padding: 12px 25px; font-size: 1rem; font-weight: 700; color: #fff;
-            background-color: #2ecc71; border: none; border-radius: 8px; cursor: pointer;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            background-color: #2ecc71; /* Hijau */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
         }
         .btn-reject {
-            padding: 12px 25px; font-size: 1rem; font-weight: 700; color: #fff;
-            background-color: #e74c3c; border: none; border-radius: 8px; cursor: pointer;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            background-color: #e74c3c; /* Merah */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
         }
     </style>
 
@@ -110,15 +131,14 @@
 
             <h3 style="margin-top: 30px;">Berkas Pengajuan</h3>
             <div class="file-list">
-                <a href="{{ route('staff.validasi.download', [$pengajuan->id, 'tipe' => 'buku']) }}" target="_blank">
-                    <i class="fa-solid fa-file-pdf"></i> Buku Skripsi
-                </a>
-                <a href="{{ route('staff.validasi.download', [$pengajuan->id, 'tipe' => 'khs']) }}" target="_blank">
-                    <i class="fa-solid fa-file-pdf"></i> Kartu Hasil Studi (KHS)
-                </a>
-                <a href="{{ route('staff.validasi.download', [$pengajuan->id, 'tipe' => 'transkrip']) }}" target="_blank">
-                    <i class="fa-solid fa-file-pdf"></i> Transkrip Akademik
-                </a>
+                @forelse ($pengajuan->dokumen as $dokumen)
+                    <a href="{{ route('dokumen.download', $dokumen->id) }}" target="_blank">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        {{ $dokumen->tipe_dokumen }} ({{ $dokumen->nama_file_asli }})
+                    </a>
+                @empty
+                    <p style="color: red;">Error: Tidak ada dokumen yang terhubung dengan pengajuan ini.</p>
+                @endforelse
             </div>
         </div>
 
@@ -135,7 +155,8 @@
                 </div>
 
                 @if ($errors->any())
-                    <div style="color: red; margin-bottom: 15px;">
+                    <div style="color: red; margin-bottom: 15px; background: #ffebeb; padding: 10px; border-radius: 8px;">
+                        <strong>Error:</strong>
                         <ul>
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
@@ -155,5 +176,4 @@
             </form>
         </div>
     </div>
-
 </x-staff-layout>

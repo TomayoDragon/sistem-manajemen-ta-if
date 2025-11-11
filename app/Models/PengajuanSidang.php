@@ -13,22 +13,37 @@ class PengajuanSidang extends Model
 
     /**
      * Kolom yang boleh diisi (mass assignable)
+     * (Ini adalah versi yang benar setelah kita hapus path file)
      */
     protected $fillable = [
         'tugas_akhir_id',
-        'path_buku_skripsi',
-        'path_khs',
-        'path_transkrip',
         'status_validasi',
         'catatan_validasi',
         'validator_id',
         'validated_at',
     ];
-
+    
+    // --- INI ADALAH FUNGSI YANG HILANG ---
     /**
      * Relasi: Pengajuan ini milik TA mana.
      */
+    public function tugasAkhir()
+    {
+        return $this->belongsTo(TugasAkhir::class, 'tugas_akhir_id');
+    }
+    // --- AKHIR FUNGSI YANG HILANG ---
 
+    /**
+     * Relasi: Siapa staf yang memvalidasi.
+     */
+    public function validator()
+    {
+        return $this->belongsTo(Staff::class, 'validator_id');
+    }
+
+    /**
+     * Relasi: LSTA yang dibuat dari pengajuan ini
+     */
     public function lstas()
     {
         return $this->hasMany(Lsta::class, 'pengajuan_sidang_id');
@@ -41,16 +56,12 @@ class PengajuanSidang extends Model
     {
         return $this->hasMany(Sidang::class, 'pengajuan_sidang_id');
     }
-    public function tugasAkhir()
-    {
-        return $this->belongsTo(TugasAkhir::class, 'tugas_akhir_id');
-    }
 
     /**
-     * Relasi: Siapa staf yang memvalidasi.
+     * Relasi: Satu paket pengajuan memiliki BANYAK dokumen.
      */
-    public function validator()
+    public function dokumen()
     {
-        return $this->belongsTo(Staff::class, 'validator_id');
+        return $this->hasMany(DokumenPengajuan::class, 'pengajuan_sidang_id');
     }
 }

@@ -23,17 +23,11 @@ class LembarPenilaian extends Model
         'komentar_revisi',
     ];
 
-    /**
-     * Relasi ke Dosen yang menilai.
-     */
     public function dosen()
     {
         return $this->belongsTo(Dosen::class, 'dosen_id');
     }
 
-    /**
-     * Relasi polimorfik (bisa ke Lsta atau Sidang).
-     */
     public function penilaian()
     {
         return $this->morphTo();

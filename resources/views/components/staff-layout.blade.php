@@ -273,7 +273,9 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#"> <i class="fa-solid fa-archive"></i>
+                    <a href="{{ route('staff.arsip.index') }}"
+                        class="{{ request()->routeIs('staff.arsip.index') ? 'active' : '' }}">
+                        <i class="fa-solid fa-archive"></i>
                         Arsip TA
                     </a>
                 </li>

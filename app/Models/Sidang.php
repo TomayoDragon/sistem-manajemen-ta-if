@@ -28,4 +28,16 @@ class Sidang extends Model {
     {
         return $this->morphMany(LembarPenilaian::class, 'penilaian');
     }
+    public function dosenPengujiKetua()
+    {
+        return $this->belongsTo(Dosen::class, 'dosen_penguji_ketua_id');
+    }
+
+    /**
+     * Relasi ke Dosen Penguji (Sekretaris).
+     */
+    public function dosenPengujiSekretaris()
+    {
+        return $this->belongsTo(Dosen::class, 'dosen_penguji_sekretaris_id');
+    }
 }
