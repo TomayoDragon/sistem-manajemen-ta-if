@@ -10,24 +10,19 @@ class ArsipController extends Controller
 {
     /**
      * Menampilkan halaman Arsip TA dengan fitur pencarian.
+     * (Method ini sudah benar, tidak ada perubahan)
      */
     public function index(Request $request)
     {
-        // 1. Ambil kata kunci pencarian
         $searchQuery = $request->search;
 
-        // 2. Query utama untuk mengambil semua data TA
         $query = TugasAkhir::query()
                             ->with('mahasiswa', 'dosenPembimbing1', 'dosenPembimbing2')
                             ->orderBy('created_at', 'desc');
 
-        // 3. Terapkan Filter Pencarian (jika ada search query)
         if ($searchQuery) {
             $query->where(function ($q) use ($searchQuery) {
-                // Cari berdasarkan Judul TA
                 $q->where('judul', 'like', '%' . $searchQuery . '%')
-                  
-                  // ATAU Cari berdasarkan Nama Mahasiswa/NRP
                   ->orWhereHas('mahasiswa', function ($mahasiswaQuery) use ($searchQuery) {
                       $mahasiswaQuery->where('nama_lengkap', 'like', '%' . $searchQuery . '%')
                                      ->orWhere('nrp', 'like', '%' . $searchQuery . '%');
@@ -35,10 +30,8 @@ class ArsipController extends Controller
             });
         }
         
-        // 4. Ambil data dengan pagination (misal 20 data per halaman)
         $arsipTugasAkhir = $query->paginate(20);
 
-        // 5. Kirim data ke view
         return view('staff.arsip-index', [
             'arsipTugasAkhir' => $arsipTugasAkhir,
             'searchQuery' => $searchQuery,
@@ -46,12 +39,20 @@ class ArsipController extends Controller
     }
 
     /**
-     * Menampilkan detail TA (Placeholder untuk nanti).
+     * Menampilkan detail TA (LOGIKA DIPERBARUI).
      */
     public function show(TugasAkhir $tugasAkhir)
     {
-        // Muat relasi yang dibutuhkan
-        $tugasAkhir->load('mahasiswa', 'dosenPembimbing1', 'dosenPembimbing2', 'sidangs', 'lstas', 'pengajuanSidangs');
+        // Muat SEMUA relasi yang kita butuhkan untuk halaman detail
+        $tugasAkhir->load(
+            'mahasiswa', 
+            'dosenPembimbing1', 
+            'dosenPembimbing2', 
+            'lstas',  // Semua jadwal LSTA
+            'sidangs', // Semua jadwal Sidang
+            'pengajuanSidangs.dokumen', // Semua paket pengajuan, DAN dokumen di dalamnya
+            'pengajuanSidangs.validator' // Siapa staf yg memvalidasi
+        );
 
         return view('staff.arsip-detail', [
             'ta' => $tugasAkhir
