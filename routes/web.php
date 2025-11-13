@@ -41,7 +41,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/sidang', [SidangController::class, 'index'])->name('sidang');
         Route::get('/sidang/{sidang}/berita-acara', [BeritaAcaraController::class, 'show'])->name('sidang.berita-acara');
         Route::get('/signature', [DigitalSignatureController::class, 'index'])->name('signature');
-        Route::post('/generate-keys', [KeyGenerationController::class, 'store'])->name('keys.generate');
     });
 
     // --- GRUP DOSEN ---

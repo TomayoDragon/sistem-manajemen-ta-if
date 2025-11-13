@@ -35,7 +35,7 @@ class UploadController extends Controller
     }
 
     /**
-     * Menyimpan paket pengajuan, melakukan HASHING & SIGNATURE PER FILE.
+     * Menyimpan paket pengajuan, melakukan HASHING & SIGNATURE PER FILE (ASLI).
      */
     public function store(Request $request, SignatureService $signatureService)
     {

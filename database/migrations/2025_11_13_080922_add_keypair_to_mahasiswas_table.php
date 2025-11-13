@@ -6,7 +6,10 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void {
         Schema::table('mahasiswas', function (Blueprint $table) {
+            // Public key (base64 encoded text)
             $table->text('public_key')->nullable()->after('nama_lengkap');
+
+            // Private key (dienkripsi oleh Laravel Crypt)
             $table->text('private_key_encrypted')->nullable()->after('public_key');
         });
     }
