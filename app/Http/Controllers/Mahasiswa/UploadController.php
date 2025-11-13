@@ -1,6 +1,5 @@
 <?php
 
-// INI ADALAH BARIS KUNCI YANG MEMPERBAIKI ERROR ANDA
 namespace App\Http\Controllers\Mahasiswa;
 
 use App\Http\Controllers\Controller;
@@ -47,38 +46,46 @@ class UploadController extends Controller
         ]);
 
         $tugasAkhir = Auth::user()->mahasiswa->tugasAkhirs()->latest()->first();
-        
+        $mahasiswa = Auth::user()->mahasiswa; // <-- Ambil model mahasiswa
+
+        // --- VALIDASI KUNCI (SANGAT PENTING) ---
+        if (empty($mahasiswa->private_key_encrypted) || empty($mahasiswa->public_key)) {
+            // Ini adalah fallback jika 'created' event gagal
+            return redirect()->route('mahasiswa.upload')
+                ->with('error', 'Upload Gagal! Akun Anda belum memiliki Kunci Digital. Harap hubungi Admin.');
+        }
+
         $isPending = $tugasAkhir->pengajuanSidangs()->where('status_validasi', 'PENDING')->exists();
         if ($isPending) {
             return redirect()->route('mahasiswa.upload')->with('error', 'Anda sudah memiliki pengajuan yang sedang divalidasi.');
         }
-
+        
         DB::beginTransaction();
         try {
-            // 1. Buat "Paket" Pengajuan
             $pengajuan = PengajuanSidang::create([
                 'tugas_akhir_id' => $tugasAkhir->id,
                 'status_validasi' => 'PENDING',
             ]);
 
-            // 2. Siapkan array file
             $filesToProcess = [
                 'BUKU_SKRIPSI' => $request->file('buku_skripsi'),
                 'KHS' => $request->file('khs'),
                 'TRANSKRIP' => $request->file('transkrip'),
             ];
 
-            // 3. Loop dan proses SETIAP file
             foreach ($filesToProcess as $tipe => $file) {
                 $fileContent = $file->get();
-                
                 $hashData = $signatureService->performCustomHash($fileContent); 
-                $signature = $signatureService->simulateEdDSASigning($hashData['combined_raw_for_signing']);
+                
+                // --- PANGGIL FUNGSI SIGNING YANG ASLI ---
+                $signature = $signatureService->performRealEdDSASigning(
+                    $hashData['combined_raw_for_signing'],
+                    $mahasiswa // <-- Kirim data mahasiswa
+                );
                 
                 $path = $file->store('uploads/dokumen_pengajuan');
                 $namaFileAsli = $file->getClientOriginalName();
 
-                // 4. Buat record Dokumen terpisah
                 DokumenPengajuan::create([
                     'pengajuan_sidang_id' => $pengajuan->id,
                     'tipe_dokumen' => $tipe,
@@ -87,7 +94,7 @@ class UploadController extends Controller
                     'hash_sha512_full' => $hashData['sha512_full_hex'],
                     'hash_blake2b_full' => $hashData['blake2b_full_hex'],
                     'hash_combined' => $hashData['combined_hex'],
-                    'signature_data' => $signature,
+                    'signature_data' => $signature, // <-- Ini adalah signature asli
                     'is_signed' => true,
                 ]);
             }
@@ -97,7 +104,8 @@ class UploadController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('mahasiswa.upload')->with('error', 'Terjadi kesalahan saat memproses file. Silakan coba lagi. Error: ' . $e->getMessage());
+            // Tampilkan pesan error yang lebih spesifik
+            return redirect()->route('mahasiswa.upload')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 }

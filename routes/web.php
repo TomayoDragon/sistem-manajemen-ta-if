@@ -15,7 +15,7 @@ use App\Http\Controllers\Staff\DashboardController as StaffDashboardController;
 use App\Http\Controllers\Staff\ValidasiController;
 use App\Http\Controllers\Staff\JadwalController; // <-- KEMBALIKAN IMPORT INI
 use App\Http\Controllers\Staff\ArsipController;
-
+use App\Http\Controllers\Mahasiswa\KeyGenerationController;
 // HAPUS IMPORT 'JadwalImportController'
 
 /*
@@ -41,6 +41,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/sidang', [SidangController::class, 'index'])->name('sidang');
         Route::get('/sidang/{sidang}/berita-acara', [BeritaAcaraController::class, 'show'])->name('sidang.berita-acara');
         Route::get('/signature', [DigitalSignatureController::class, 'index'])->name('signature');
+        Route::post('/generate-keys', [KeyGenerationController::class, 'store'])->name('keys.generate');
     });
 
     // --- GRUP DOSEN ---
