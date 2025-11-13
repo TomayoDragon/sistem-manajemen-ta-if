@@ -4,36 +4,28 @@
     </x-slot>
 
     <style>
-        .table-wrapper {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        .table-wrapper th,
-        .table-wrapper td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-
-        .table-wrapper th {
-            background-color: #f4f4f4;
-            font-weight: 700;
-        }
-
+        .table-wrapper { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .table-wrapper th, .table-wrapper td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        .table-wrapper th { background-color: #f4f4f4; font-weight: 700; }
         .btn-penilaian {
-            padding: 5px 12px;
-            font-size: 0.9rem;
-            text-decoration: none;
-            color: white;
-            background-color: #0a2e6c;
-            /* Biru IF */
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            padding: 5px 12px; font-size: 0.9rem; text-decoration: none;
+            color: white; background-color: #0a2e6c; border: none;
+            border-radius: 5px; cursor: pointer; display: block; text-align: center;
+        }
+        /* Tombol Cek Integritas Baru */
+        .btn-integritas {
+            padding: 5px 12px; font-size: 0.9rem; text-decoration: none;
+            color: #0a2e6c; background-color: #eef5ff; border: 1px solid #0a2e6c;
+            border-radius: 5px; cursor: pointer; display: block; text-align: center;
+            margin-top: 5px;
         }
     </style>
+
+    @if (session('success'))
+        <div class="content-box" style="background-color: #eBffeb; color: #0a0; margin-bottom: 20px;">
+            {{ session('success') }}
+        </div>
+    @endif
 
     <h1 class="content-title">Jadwal Menguji LSTA</h1>
     <div class="content-box">
@@ -55,18 +47,19 @@
                         <td>{{ \Carbon\Carbon::parse($lsta->jadwal)->format('d M Y, H:i') }}</td>
                         <td>{{ $lsta->ruangan }}</td>
                         <td>
-                            <a href="{{ route('dosen.penilaian.show', ['type' => 'lsta', 'id' => $lsta->id]) }}"
-                                class="btn-penilaian">
+                            <a href="{{ route('dosen.penilaian.show', ['type' => 'lsta', 'id' => $lsta->id]) }}" class="btn-penilaian">
                                 <i class="fa-solid fa-file-pen"></i> Beri Nilai
                             </a>
+                            @if($lsta->pengajuanSidang) @foreach($lsta->pengajuanSidang->dokumen as $dokumen)
+                                    <a href="{{ route('integritas.show', $dokumen->id) }}" class="btn-integritas" target="_blank">
+                                        <i class="fa-solid fa-shield-halved"></i> Cek {{ $dokumen->tipe_dokumen }}
+                                    </a>
+                                @endforeach
+                            @endif
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="5" style="text-align: center; color: #777;">
-                            Anda tidak memiliki jadwal menguji LSTA.
-                        </td>
-                    </tr>
+                    <tr> <td colspan="5" style="text-align: center; color: #777;">Anda tidak memiliki jadwal menguji LSTA.</td> </tr>
                 @endforelse
             </tbody>
         </table>
@@ -92,18 +85,19 @@
                         <td>{{ \Carbon\Carbon::parse($sidang->jadwal)->format('d M Y, H:i') }}</td>
                         <td>{{ $sidang->ruangan }}</td>
                         <td>
-                            <a href="{{ route('dosen.penilaian.show', ['type' => 'sidang', 'id' => $sidang->id]) }}"
-                                class="btn-penilaian">
+                            <a href="{{ route('dosen.penilaian.show', ['type' => 'sidang', 'id' => $sidang->id]) }}" class="btn-penilaian">
                                 <i class="fa-solid fa-file-pen"></i> Beri Nilai
                             </a>
+                            @if($sidang->pengajuanSidang) @foreach($sidang->pengajuanSidang->dokumen as $dokumen)
+                                    <a href="{{ route('integritas.show', $dokumen->id) }}" class="btn-integritas" target="_blank">
+                                        <i class="fa-solid fa-shield-halved"></i> Cek {{ $dokumen->tipe_dokumen }}
+                                    </a>
+                                @endforeach
+                            @endif
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="5" style="text-align: center; color: #777;">
-                            Anda tidak memiliki jadwal menguji Sidang TA.
-                        </td>
-                    </tr>
+                    <tr> <td colspan="5" style="text-align: center; color: #777;">Anda tidak memiliki jadwal menguji Sidang TA.</td> </tr>
                 @endforelse
             </tbody>
         </table>

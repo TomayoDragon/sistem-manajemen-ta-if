@@ -4,31 +4,19 @@
     </x-slot>
 
     <style>
-        .table-wrapper {
-            width: 100%; border-collapse: collapse; margin-top: 10px;
-        }
-        .table-wrapper th, .table-wrapper td {
-            border: 1px solid #ddd; padding: 12px; text-align: left;
-        }
+        .table-wrapper { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .table-wrapper th, .table-wrapper td { border: 1px solid #ddd; padding: 12px; text-align: left; }
         .table-wrapper th { background-color: #f4f4f4; font-weight: 700; }
         .btn-review {
             padding: 5px 12px; font-size: 0.9rem; text-decoration: none;
-            color: white; background-color: #0a2e6c; /* Biru IF */
-            border: none; border-radius: 5px; cursor: pointer;
+            color: white; background-color: #0a2e6c; border: none; border-radius: 5px; cursor: pointer;
         }
-        /* --- Tombol Generate Baru --- */
         .btn-generate-all {
-            display: inline-block;
-            padding: 12px 25px;
-            font-size: 1rem;
-            font-weight: 700;
-            color: #fff;
-            background-color: #5cb85c; /* Hijau */
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-bottom: 20px;
+            display: inline-block; padding: 12px 25px; font-size: 1rem; font-weight: 700;
+            color: #fff; background-color: #5cb85c; /* Hijau */
+            border: none; border-radius: 8px; cursor: pointer; margin-bottom: 20px;
         }
+        /* Hapus .btn-finalize karena tabelnya dihapus */
     </style>
 
     @if (session('success'))
@@ -46,12 +34,7 @@
     <div class="content-box">
         <table class="table-wrapper">
             <thead>
-                <tr>
-                    <th>Mahasiswa</th>
-                    <th>NRP</th>
-                    <th>Tgl Pengajuan</th>
-                    <th>Aksi</th>
-                </tr>
+                <tr> <th>Mahasiswa</th> <th>NRP</th> <th>Tgl Pengajuan</th> <th>Aksi</th> </tr>
             </thead>
             <tbody>
                 @forelse ($pendingPengajuans as $pengajuan)
@@ -66,11 +49,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="4" style="text-align: center; color: #777;">
-                            Tidak ada paket pengajuan yang menunggu validasi.
-                        </td>
-                    </tr>
+                    <tr> <td colspan="4" style="text-align: center; color: #777;">Tidak ada paket pengajuan yang menunggu validasi.</td> </tr>
                 @endforelse
             </tbody>
         </table>
@@ -89,13 +68,10 @@
                 </button>
             </form>
         @endif
+        
         <table class="table-wrapper">
             <thead>
-                <tr>
-                    <th>Mahasiswa</th>
-                    <th>NRP</th>
-                    <th>Tgl Disetujui</th>
-                </tr>
+                <tr> <th>Mahasiswa</th> <th>NRP</th> <th>Tgl Disetujui</th> </tr>
             </thead>
             <tbody>
                 @forelse ($acceptedPengajuans as $pengajuan)
@@ -105,14 +81,10 @@
                         <td>{{ $pengajuan->validated_at ? \Carbon\Carbon::parse($pengajuan->validated_at)->format('d M Y') : '-' }}</td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="3" style="text-align: center; color: #777;">
-                            Tidak ada pengajuan yang siap dijadwalkan.
-                        </td>
-                    </tr>
+                    <tr> <td colspan="3" style="text-align: center; color: #777;">Tidak ada pengajuan yang siap dijadwalkan.</td> </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 
-</x-staff-layout>
+    </x-staff-layout>

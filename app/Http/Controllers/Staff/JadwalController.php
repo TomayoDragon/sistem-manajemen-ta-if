@@ -18,10 +18,10 @@ class JadwalController extends Controller
      */
     public function generateAll()
     {
-        // 1. Ambil semua pengajuan yang 'TERIMA' & belum punya LSTA
+        // 1. Ambil semua pengajuan yang 'TERIMA' & belum punya LSTA/Sidang
         $pengajuansToSchedule = PengajuanSidang::where('status_validasi', 'TERIMA')
-                                  ->doesntHave('lstas') // Kunci: Hanya yg belum punya LSTA
-                                  ->with('tugasAkhir') // Ambil data TA terkait
+                                  ->doesntHave('lstas') // Hanya yg belum punya LSTA
+                                  ->with('tugasAkhir')
                                   ->get();
         
         // 2. Ambil semua ID Dosen
@@ -36,48 +36,43 @@ class JadwalController extends Controller
         // 4. Loop setiap pengajuan dan buat jadwal
         foreach ($pengajuansToSchedule as $pengajuan) {
             
-            // Ambil ID Pembimbing
             $pembimbingIds = [
                 $pengajuan->tugasAkhir->dosen_pembimbing_1_id,
                 $pengajuan->tugasAkhir->dosen_pembimbing_2_id
             ];
             
-            // Ambil Dosen yg BUKAN pembimbing
             $availablePenguji = $allDosenIds->diff($pembimbingIds);
 
             // --- BUAT JADWAL LSTA (DUMMY) ---
-            // (Sesuai req: 1 Dosen Penguji)
             if ($availablePenguji->count() > 0) {
                 Lsta::create([
                     'tugas_akhir_id' => $pengajuan->tugas_akhir_id,
                     'pengajuan_sidang_id' => $pengajuan->id,
-                    'dosen_penguji_id' => $availablePenguji->random(), // Ambil 1 Dosen acak
-                    'jadwal' => $startDate->copy()->addHours($counter), // Jadwal unik
+                    'dosen_penguji_id' => $availablePenguji->random(),
+                    'jadwal' => $startDate->copy()->addHours($counter),
                     'ruangan' => $dummyRooms[array_rand($dummyRooms)],
                     'status' => 'TERJADWAL',
                 ]);
             }
 
             // --- BUAT JADWAL SIDANG (DUMMY) ---
-            // (Sesuai req: 2 Dosen Penguji)
             if ($availablePenguji->count() > 1) {
-                $pengujiSidang = $availablePenguji->random(2); // Ambil 2 Dosen acak
+                $pengujiSidang = $availablePenguji->random(2);
                 Sidang::create([
                     'tugas_akhir_id' => $pengajuan->tugas_akhir_id,
                     'pengajuan_sidang_id' => $pengajuan->id,
                     'dosen_penguji_ketua_id' => $pengujiSidang[0],
                     'dosen_penguji_sekretaris_id' => $pengujiSidang[1],
-                    // Jadwal sidang kita buat 3 hari setelah LSTA
                     'jadwal' => $startDate->copy()->addHours($counter)->addDays(3),
                     'ruangan' => $dummyRooms[array_rand($dummyRooms)],
                     'status' => 'TERJADWAL',
                 ]);
             }
 
-            $counter++; // Tambah 1 jam untuk mahasiswa berikutnya
+            $counter++;
         }
 
-        // 5. Redirect kembali dengan pesan sukses
+        // 5. Redirect kembali
         if ($counter == 0) {
             return redirect()->route('staff.dashboard')
                 ->with('error', 'Tidak ada jadwal baru yang di-generate (semua sudah terjadwal).');
