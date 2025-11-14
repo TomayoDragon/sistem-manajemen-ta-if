@@ -11,18 +11,13 @@
             padding: 5px 12px; font-size: 0.9rem; text-decoration: none;
             color: white; background-color: #0a2e6c; border: none; border-radius: 5px; cursor: pointer;
         }
-        /* Tombol Generate (Kembali) */
-        .btn-generate-all {
+        .btn-excel {
             display: inline-block; padding: 12px 25px; font-size: 1rem; font-weight: 700;
-            color: #fff; background-color: #5cb85c; /* Hijau */
-            border: none; border-radius: 8px; cursor: pointer; margin-bottom: 20px;
+            color: #fff; border: none; border-radius: 8px; cursor: pointer;
+            text-decoration: none; margin-bottom: 20px; margin-right: 10px;
         }
-        /* Tombol Finalisasi (Orange) */
-        .btn-finalize {
-            padding: 5px 12px; font-size: 0.9rem; text-decoration: none;
-            color: white; background-color: #e67e22; /* Oranye */
-            border: none; border-radius: 5px; cursor: pointer;
-        }
+        .btn-export { background-color: #16a085; } /* Hijau Excel */
+        .btn-import { background-color: #0a2e6c; } /* Biru IF */
     </style>
 
     @if (session('success'))
@@ -64,18 +59,22 @@
     <h1 class="content-title" style="margin-top: 30px;">Pengajuan Disetujui (Siap Dijadwalkan)</h1>
     <div class="content-box">
         
-        @if($acceptedPengajuans->count() > 0)
-            <form action="{{ route('staff.jadwal.generate') }}" method="POST" 
-                  onsubmit="return confirm('Anda yakin ingin men-generate jadwal untuk {{ $acceptedPengajuans->count() }} mahasiswa?');">
-                @csrf
-                <button type="submit" class="btn-generate-all">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    Auto-Generate Jadwal untuk Semua ({{ $acceptedPengajuans->count() }})
-                </button>
-            </form>
-        @endif
+        <p style="margin-bottom: 15px;">
+            Total mahasiswa yang siap dijadwalkan: 
+            <strong>{{ $acceptedPengajuans->count() }} mahasiswa</strong>
+        </p>
+
+        <a href="{{ route('staff.jadwal.export') }}" class="btn-excel btn-export">
+            <i class="fa-solid fa-file-export"></i> 
+            Langkah 1: Generate & Download Draf Jadwal
+        </a>
         
-        <table class="table-wrapper">
+        <a href="{{ route('staff.jadwal.import.form') }}" class="btn-excel btn-import">
+            <i class="fa-solid fa-file-import"></i> 
+            Langkah 2: Import Draf Final
+        </a>
+
+        <table class="table-wrapper" style="margin-top: 20px;">
             <thead>
                 <tr> <th>Mahasiswa</th> <th>NRP</th> <th>Tgl Disetujui</th> </tr>
             </thead>
@@ -92,39 +91,5 @@
             </tbody>
         </table>
     </div>
-
-    <h1 class="content-title" style="margin-top: 30px;">Sidang Selesai (Menunggu Finalisasi Nilai)</h1>
-    <div class="content-box">
-        <table class="table-wrapper">
-            <thead>
-                <tr>
-                    <th>Mahasiswa</th>
-                    <th>Judul TA</th>
-                    <th>Tgl Sidang</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($sessionsToFinalize as $sidang)
-                    <tr>
-                        <td>{{ $sidang->tugasAkhir->mahasiswa->nama_lengkap }}</td>
-                        <td>{{ \Illuminate\Support\Str::limit($sidang->tugasAkhir->judul, 45) }}</td>
-                        <td>{{ $sidang->created_at->format('d M Y, H:i') }}</td>
-                        <td>
-                            <form action="{{ route('staff.berita-acara.store', $sidang->id) }}" method="POST" 
-                                  onsubmit="return confirm('Anda yakin ingin memfinalisasi nilai untuk sidang ini? Aksi ini tidak dapat diulang.');">
-                                @csrf
-                                <button type="submit" class="btn-finalize">
-                                    <i class="fa-solid fa-calculator"></i> Finalisasi Nilai
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                @empty
-                    <tr> <td colspan="4" style="text-align: center; color: #777;">Tidak ada sidang yang menunggu finalisasi.</td> </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
+    
 </x-staff-layout>

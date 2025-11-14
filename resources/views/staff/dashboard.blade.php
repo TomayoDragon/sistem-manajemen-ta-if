@@ -11,12 +11,14 @@
             padding: 5px 12px; font-size: 0.9rem; text-decoration: none;
             color: white; background-color: #0a2e6c; border: none; border-radius: 5px; cursor: pointer;
         }
-        .btn-generate-all {
+        /* Style Tombol Export/Import */
+        .btn-excel {
             display: inline-block; padding: 12px 25px; font-size: 1rem; font-weight: 700;
-            color: #fff; background-color: #5cb85c; /* Hijau */
-            border: none; border-radius: 8px; cursor: pointer; margin-bottom: 20px;
+            color: #fff; border: none; border-radius: 8px; cursor: pointer;
+            text-decoration: none; margin-bottom: 20px; margin-right: 10px;
         }
-        /* Hapus .btn-finalize karena tabelnya dihapus */
+        .btn-export { background-color: #16a085; } /* Hijau Excel */
+        .btn-import { background-color: #0a2e6c; } /* Biru IF */
     </style>
 
     @if (session('success'))
@@ -58,18 +60,22 @@
     <h1 class="content-title" style="margin-top: 30px;">Pengajuan Disetujui (Siap Dijadwalkan)</h1>
     <div class="content-box">
         
-        @if($acceptedPengajuans->count() > 0)
-            <form action="{{ route('staff.jadwal.generate') }}" method="POST" 
-                  onsubmit="return confirm('Anda yakin ingin men-generate jadwal untuk {{ $acceptedPengajuans->count() }} mahasiswa?');">
-                @csrf
-                <button type="submit" class="btn-generate-all">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    Auto-Generate Jadwal untuk Semua ({{ $acceptedPengajuans->count() }})
-                </button>
-            </form>
-        @endif
+        <p style="margin-bottom: 15px;">
+            Total mahasiswa yang siap dijadwalkan: 
+            <strong>{{ $acceptedPengajuans->count() }} mahasiswa</strong>
+        </p>
+
+        <a href="{{ route('staff.jadwal.export') }}" class="btn-excel btn-export">
+            <i class="fa-solid fa-file-export"></i> 
+            Langkah 1: Generate & Download Draf Jadwal
+        </a>
         
-        <table class="table-wrapper">
+        <a href="{{ route('staff.jadwal.import.form') }}" class="btn-excel btn-import">
+            <i class="fa-solid fa-file-import"></i> 
+            Langkah 2: Import Draf Final
+        </a>
+
+        <table class="table-wrapper" style="margin-top: 20px;">
             <thead>
                 <tr> <th>Mahasiswa</th> <th>NRP</th> <th>Tgl Disetujui</th> </tr>
             </thead>
@@ -86,5 +92,5 @@
             </tbody>
         </table>
     </div>
-
-    </x-staff-layout>
+    
+</x-staff-layout>

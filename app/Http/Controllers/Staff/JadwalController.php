@@ -8,7 +8,7 @@ use App\Models\Dosen;
 use App\Models\Lsta;
 use App\Models\Sidang;
 use Illuminate\Http\Request;
-use Carbon\Carbon; // <-- Import Carbon untuk mengelola tanggal
+use Carbon\Carbon;
 
 class JadwalController extends Controller
 {
@@ -20,7 +20,7 @@ class JadwalController extends Controller
     {
         // 1. Ambil semua pengajuan yang 'TERIMA' & belum punya LSTA/Sidang
         $pengajuansToSchedule = PengajuanSidang::where('status_validasi', 'TERIMA')
-                                  ->doesntHave('lstas') // Hanya yg belum punya LSTA
+                                  ->doesntHave('lstas') // Kunci: Hanya yg belum punya LSTA
                                   ->with('tugasAkhir')
                                   ->get();
         
@@ -29,7 +29,7 @@ class JadwalController extends Controller
 
         // 3. Siapkan data dummy
         $dummyRooms = ['TC.2.1', 'TC.2.2', 'Ruang Rapat IF', 'Lab Cyber'];
-        $startDate = Carbon::now()->addDays(7)->setTime(9, 0); // Mulai jadwal 1 minggu dari sekarang
+        $startDate = Carbon::now()->addDays(7)->setTime(9, 0); 
 
         $counter = 0;
 

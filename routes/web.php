@@ -2,23 +2,32 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
+
+// --- KUMPULAN SEMUA CONTROLLER KITA ---
+
+// Global (Semua Role)
 use App\Http\Controllers\IntegritasController;
 use App\Http\Controllers\DokumenController;
+
+// Mahasiswa
 use App\Http\Controllers\Mahasiswa\DashboardController;
 use App\Http\Controllers\Mahasiswa\UploadController;
 use App\Http\Controllers\Mahasiswa\SidangController;
-use App\Http\Controllers\Mahasiswa\DigitalSignatureController;
 use App\Http\Controllers\Mahasiswa\BeritaAcaraController;
+use App\Http\Controllers\Mahasiswa\DigitalSignatureController;
+// HAPUS 'KeyGenerationController' KARENA OTOMATIS
+
+// Dosen
 use App\Http\Controllers\Dosen\DashboardController as DosenDashboardController;
 use App\Http\Controllers\Dosen\PenilaianController;
-use App\Http\Controllers\Staff\DashboardController as StaffDashboardController;
-use App\Http\Controllers\Staff\ValidasiController;
-use App\Http\Controllers\Staff\JadwalController; // <-- KEMBALIKAN IMPORT INI
-use App\Http\Controllers\Staff\ArsipController;
-use App\Http\Controllers\Mahasiswa\KeyGenerationController;
 use App\Http\Controllers\Dosen\BimbinganController;
 
-// HAPUS IMPORT 'JadwalImportController'
+// Staff
+use App\Http\Controllers\Staff\DashboardController as StaffDashboardController;
+use App\Http\Controllers\Staff\ValidasiController;
+use App\Http\Controllers\Staff\ArsipController;
+use App\Http\Controllers\Staff\JadwalExcelController; // <-- Controller Excel kita
+
 
 /*
 |--------------------------------------------------------------------------
@@ -43,6 +52,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/sidang', [SidangController::class, 'index'])->name('sidang');
         Route::get('/sidang/{sidang}/berita-acara', [BeritaAcaraController::class, 'show'])->name('sidang.berita-acara');
         Route::get('/signature', [DigitalSignatureController::class, 'index'])->name('signature');
+        // HAPUS RUTE 'keys.generate' (INI YANG MENYEBABKAN ERROR)
     });
 
     // --- GRUP DOSEN ---
@@ -61,13 +71,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/arsip/{tugasAkhir}/detail', [ArsipController::class, 'show'])->name('arsip.show');
         Route::get('/validasi/{id}/review', [ValidasiController::class, 'show'])->name('validasi.review');
         Route::post('/validasi/{id}/process', [ValidasiController::class, 'process'])->name('validasi.process');
-
-        // HAPUS RUTE IMPORT EXCEL
-        // Route::get('/jadwal/import', ...)->name('jadwal.import.form');
-        // Route::post('/jadwal/import', ...)->name('jadwal.import.process');
-
-        // KEMBALIKAN RUTE AUTO-GENERATE:
-        Route::post('/jadwal/generate-all', [JadwalController::class, 'generateAll'])->name('jadwal.generate');
+        
+        // Rute Export & Import Excel (Yang Benar)
+        Route::get('/jadwal/export', [JadwalExcelController::class, 'exportTemplate'])->name('jadwal.export');
+        Route::get('/jadwal/import', [JadwalExcelController::class, 'showImportForm'])->name('jadwal.import.form');
+        Route::post('/jadwal/import', [JadwalExcelController::class, 'processImport'])->name('jadwal.import.process');
     });
 
     // --- GRUP ADMIN ---
@@ -81,13 +89,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/integritas/{dokumen}', [IntegritasController::class, 'show'])->name('integritas.show');
     Route::post('/integritas/{dokumen}', [IntegritasController::class, 'verify'])->name('integritas.verify');
     Route::get('/dokumen/{dokumen}/download', [DokumenController::class, 'download'])->name('dokumen.download');
-
+    
     // Rute Profil Bawaan Breeze
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
 });
+
 
 // Memuat rute otentikasi
 require __DIR__ . '/auth.php';
