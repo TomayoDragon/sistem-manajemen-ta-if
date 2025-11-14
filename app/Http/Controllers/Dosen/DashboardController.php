@@ -20,51 +20,43 @@ class DashboardController extends Controller
         $dosen = Auth::user()->dosen;
         $dosenId = $dosen->id;
 
-        // 2. Ambil daftar mahasiswa bimbingan (Ini tetap sama)
-        $mahasiswaBimbingan = TugasAkhir::where('dosen_pembimbing_1_id', $dosenId)
-                                      ->orWhere('dosen_pembimbing_2_id', $dosenId)
-                                      ->with('mahasiswa')
-                                      ->get();
+        // 2. HAPUS LOGIKA MAHASISWA BIMBINGAN DARI SINI
 
-        // 3. Ambil jadwal LSTA (LOGIKA DIPERBARUI)
-        // (Tampilkan jika Dosen adalah Penguji LSTA ATAU Pembimbing dari TA tsb)
+        // 3. Ambil jadwal LSTA (Logika ini tetap)
         $jadwalLsta = Lsta::where('status', 'TERJADWAL')
                             ->where(function ($query) use ($dosenId) {
-                                // Kondisi 1: Dosen adalah Penguji
                                 $query->where('dosen_penguji_id', $dosenId)
-                                // Kondisi 2: ATAU Dosen adalah Pembimbing
                                       ->orWhereHas('tugasAkhir', function ($taQuery) use ($dosenId) {
                                           $taQuery->where('dosen_pembimbing_1_id', $dosenId)
                                                   ->orWhere('dosen_pembimbing_2_id', $dosenId);
                                       });
                             })
-                            ->with('tugasAkhir.mahasiswa')
+                            // Kita eager load relasi yang dibutuhkan untuk link verifikasi
+                            ->with('tugasAkhir.mahasiswa', 'pengajuanSidang.dokumen')
                             ->orderBy('jadwal', 'asc')
                             ->get();
 
-        // 4. Ambil jadwal Sidang (LOGIKA DIPERBARUI)
-        // (Tampilkan jika Dosen adalah Penguji Sidang ATAU Pembimbing dari TA tsb)
+        // 4. Ambil jadwal Sidang (Logika ini tetap)
         $jadwalSidang = Sidang::where('status', 'TERJADWAL')
                               ->where(function ($query) use ($dosenId) {
-                                  // Kondisi 1: Dosen adalah Penguji (Ketua/Sekretaris)
                                   $query->where('dosen_penguji_ketua_id', $dosenId)
                                         ->orWhere('dosen_penguji_sekretaris_id', $dosenId)
-                                  // Kondisi 2: ATAU Dosen adalah Pembimbing
                                         ->orWhereHas('tugasAkhir', function ($taQuery) use ($dosenId) {
                                             $taQuery->where('dosen_pembimbing_1_id', $dosenId)
                                                     ->orWhere('dosen_pembimbing_2_id', $dosenId);
                                         });
                               })
-                              ->with('tugasAkhir.mahasiswa')
+                              // Kita eager load relasi yang dibutuhkan untuk link verifikasi
+                              ->with('tugasAkhir.mahasiswa', 'pengajuanSidang.dokumen')
                               ->orderBy('jadwal', 'asc')
                               ->get();
 
-        // 5. Kirim semua data ke view
+        // 5. Kirim data ke view (HANYA JADWAL)
         return view('dosen.dashboard', [
             'dosen' => $dosen,
-            'mahasiswaBimbingan' => $mahasiswaBimbingan,
             'jadwalLsta' => $jadwalLsta,
             'jadwalSidang' => $jadwalSidang,
+            // Variabel 'mahasiswaBimbingan' DIHAPUS
         ]);
     }
 }

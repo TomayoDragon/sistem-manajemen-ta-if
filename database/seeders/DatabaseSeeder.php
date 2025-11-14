@@ -54,7 +54,7 @@ class DatabaseSeeder extends Seeder
 
         // Buat Mahasiswa James
         $mhs_james = \App\Models\Mahasiswa::factory()->create([
-            'nrp' => '160421001',
+            'nrp' => '160422100',
             'nama_lengkap' => 'James Dharmawan',
         ]);
         User::factory()->create([

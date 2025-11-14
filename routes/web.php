@@ -16,6 +16,8 @@ use App\Http\Controllers\Staff\ValidasiController;
 use App\Http\Controllers\Staff\JadwalController; // <-- KEMBALIKAN IMPORT INI
 use App\Http\Controllers\Staff\ArsipController;
 use App\Http\Controllers\Mahasiswa\KeyGenerationController;
+use App\Http\Controllers\Dosen\BimbinganController;
+
 // HAPUS IMPORT 'JadwalImportController'
 
 /*
@@ -48,6 +50,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [DosenDashboardController::class, 'index'])->name('dashboard');
         Route::get('/penilaian/{type}/{id}', [PenilaianController::class, 'show'])->name('penilaian.show');
         Route::post('/penilaian/{type}/{id}', [PenilaianController::class, 'store'])->name('penilaian.store');
+        Route::get('/bimbingan', [BimbinganController::class, 'index'])->name('bimbingan.index');
+        Route::post('/bimbingan/{tugasAkhir}/approve', [BimbinganController::class, 'approve'])->name('bimbingan.approve');
     });
 
     // --- GRUP STAFF ---

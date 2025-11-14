@@ -17,16 +17,43 @@ class UploadController extends Controller
     /**
      * Menampilkan halaman form upload.
      */
+    /**
+     * Menampilkan halaman form upload.
+     * (DIPERBARUI DENGAN LOGIKA PERSETUJUAN GANDA)
+     */
     public function create()
     {
-        $tugasAkhir = Auth::user()->mahasiswa->tugasAkhirs()->latest()->first();
-        if (! $tugasAkhir) {
-            return redirect()->route('mahasiswa.dashboard')->with('error', 'Anda harus memiliki data Tugas Akhir aktif untuk mengupload berkas.');
+        // 1. Ambil TA aktif milik mahasiswa
+        $tugasAkhir = Auth::user()->mahasiswa
+            ->tugasAkhirs()
+            ->latest()
+            ->first();
+
+        // 2. JIKA TIDAK PUNYA TA
+        if (!$tugasAkhir) {
+            return redirect()->route('mahasiswa.dashboard')
+                ->with('error', 'Anda belum memiliki data Tugas Akhir aktif.');
         }
 
-        $riwayatPengajuan = $tugasAkhir->pengajuanSidangs()->with('dokumen')->latest()->get();
+        // 3. --- LOGIKA KUNCI BARU ---
+        // JIKA SALAH SATU ATAU KEDUA DOSBING BELUM SETUJU
+        if (is_null($tugasAkhir->dosbing_1_approved_at) || is_null($tugasAkhir->dosbing_2_approved_at)) {
+            return redirect()->route('mahasiswa.dashboard')
+                ->with('error', 'Upload berkas ditolak. Anda belum mendapatkan persetujuan dari KEDUA Dosen Pembimbing untuk melanjutkan ke tahap sidang.');
+        }
+        // --- AKHIR LOGIKA KUNCI ---
+
+        // (Jika lolos, berarti KEDUA dosbing sudah setuju)
+
+        // 4. Ambil riwayat pengajuan (Logic lama tetap berjalan)
+        $riwayatPengajuan = $tugasAkhir->pengajuanSidangs()
+            ->with('dokumen')
+            ->latest()
+            ->get();
+
         $pengajuanTerbaru = $riwayatPengajuan->first();
 
+        // 5. Tampilkan view upload
         return view('mahasiswa.upload', [
             'tugasAkhir' => $tugasAkhir,
             'pengajuanTerbaru' => $pengajuanTerbaru,
@@ -59,7 +86,7 @@ class UploadController extends Controller
         if ($isPending) {
             return redirect()->route('mahasiswa.upload')->with('error', 'Anda sudah memiliki pengajuan yang sedang divalidasi.');
         }
-        
+
         DB::beginTransaction();
         try {
             $pengajuan = PengajuanSidang::create([
@@ -75,14 +102,14 @@ class UploadController extends Controller
 
             foreach ($filesToProcess as $tipe => $file) {
                 $fileContent = $file->get();
-                $hashData = $signatureService->performCustomHash($fileContent); 
-                
+                $hashData = $signatureService->performCustomHash($fileContent);
+
                 // --- PANGGIL FUNGSI SIGNING YANG ASLI ---
                 $signature = $signatureService->performRealEdDSASigning(
                     $hashData['combined_raw_for_signing'],
                     $mahasiswa // <-- Kirim data mahasiswa
                 );
-                
+
                 $path = $file->store('uploads/dokumen_pengajuan');
                 $namaFileAsli = $file->getClientOriginalName();
 

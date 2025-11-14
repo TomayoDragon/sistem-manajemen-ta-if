@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use App\Models\PengajuanSidang;
-use Illuminate\Http\Request;
+use IlluminateS\upport\Facades\Request; // <-- Perhatikan, saya ganti Request
 use Illuminate\Support\Facades\Auth;
-// HAPUS 'use Storage' KARENA SUDAH TIDAK DIPAKAI DI SINI
+use Illuminate\Support\Facades\Storage;
 
 class ValidasiController extends Controller
 {
@@ -15,8 +15,8 @@ class ValidasiController extends Controller
      */
     public function show($id)
     {
-        // Ambil data pengajuan DAN relasi 'dokumen'-nya
-        $pengajuan = PengajuanSidang::with('tugasAkhir.mahasiswa', 'dokumen') // <-- PERBARUI INI
+        // Ambil data pengajuan DAN relasi 'dokumen' & 'tugasAkhir'
+        $pengajuan = PengajuanSidang::with('tugasAkhir.mahasiswa', 'dokumen')
                         ->where('id', $id)
                         ->where('status_validasi', 'PENDING')
                         ->firstOrFail(); 
@@ -26,28 +26,44 @@ class ValidasiController extends Controller
         ]);
     }
 
-    // HAPUS SELURUH METHOD 'downloadFile()' DARI SINI
-    // (Karena sudah dipindah ke DokumenController)
-
     /**
      * Memproses keputusan validasi (Terima / Tolak).
-     * (Method ini tetap sama, tidak berubah)
+     * (INI ADALAH FUNGSI YANG DIPERBAIKI)
      */
-    public function process(Request $request, $id)
+    public function process(\Illuminate\Http\Request $request, $id) // <-- Perhatikan, saya tambahkan \Illuminate\Http\Request
     {
+        // 1. Validasi input
         $request->validate([
             'keputusan' => 'required|in:TERIMA,TOLAK',
             'catatan_validasi' => 'required_if:keputusan,TOLAK|nullable|string|max:1000',
         ]);
 
-        $pengajuan = PengajuanSidang::findOrFail($id);
+        // 2. Ambil data pengajuan (termasuk relasi TA)
+        $pengajuan = PengajuanSidang::with('tugasAkhir')->findOrFail($id);
 
+        // 3. Update status pengajuan
         $pengajuan->status_validasi = $request->input('keputusan');
         $pengajuan->catatan_validasi = $request->input('catatan_validasi');
         $pengajuan->validator_id = Auth::user()->staff_id;
         $pengajuan->validated_at = now();
         $pengajuan->save();
 
+        // 4. --- LOGIKA BARU (Sesuai Permintaan Anda) ---
+        // Jika keputusannya 'TERIMA', update status utama di tabel Tugas Akhir
+        if ($request->input('keputusan') == 'TERIMA') {
+            
+            // Ambil relasi tugasAkhir
+            $tugasAkhir = $pengajuan->tugasAkhir; 
+            
+            // Update status utama
+            if ($tugasAkhir) {
+                $tugasAkhir->status = 'Menunggu Sidang'; // Status baru
+                $tugasAkhir->save();
+            }
+        }
+        // --- AKHIR LOGIKA BARU ---
+
+        // 5. Redirect kembali
         $pesan = $request->input('keputusan') == 'TERIMA' ? 'disetujui' : 'ditolak';
         
         return redirect()->route('staff.dashboard')

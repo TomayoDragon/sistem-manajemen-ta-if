@@ -290,7 +290,7 @@
                     <a href="{{ route('mahasiswa.signature') }}"
                         class="{{ request()->routeIs('mahasiswa.signature') ? 'active' : '' }}">
                         <i class="fa-solid fa-signature"></i>
-                        Digital Signature
+                        Signed Document
                     </a>
                 </li>
             </ul>

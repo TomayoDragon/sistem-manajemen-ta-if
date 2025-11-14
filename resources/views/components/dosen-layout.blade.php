@@ -1,80 +1,18 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>{{ $title ?? 'Dashboard Mahasiswa' }} - IF Ubaya</title>
+    
+    <title>{{ $title ?? 'Dashboard Dosen' }} - IF Ubaya</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <style>
         /* CSS Reset & Global */
-
-        .user-info-trigger {
-            display: flex;
-            align-items: center;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 5px;
-            /* Beri area klik */
-            border-radius: 8px;
-            transition: background-color 0.2s;
-        }
-
-        .user-info-trigger:hover {
-            background-color: #f0f0f0;
-            /* Efek hover ringan */
-        }
-
-        .dropdown-menu {
-            position: absolute;
-            top: 80px;
-            /* Sesuaikan jarak dari atas */
-            right: 30px;
-            /* Sesuaikan jarak dari kanan */
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border: 1px solid #ddd;
-            z-index: 50;
-            min-width: 200px;
-            /* Sembunyikan default, diatur oleh Alpine.js */
-            display: none;
-        }
-
-        /* Tampilkan saat 'open' (Alpine.js) */
-        .dropdown-menu[x-show] {
-            display: block;
-        }
-
-        .dropdown-menu a {
-            display: block;
-            padding: 12px 20px;
-            text-decoration: none;
-            color: #333;
-            font-size: 1rem;
-            transition: background-color 0.2s;
-        }
-
-        .dropdown-menu a:hover {
-            background-color: #f9f9f9;
-        }
-
-        /* Link Logout (warna merah) */
-        .dropdown-menu form a {
-            color: #d9534f;
-            /* Merah */
-        }
-
-        .dropdown-menu form a:hover {
-            background-color: #fdf2f2;
-        }
-
         * {
             box-sizing: border-box;
             margin: 0;
@@ -82,8 +20,7 @@
             font-family: 'Lato', sans-serif;
         }
 
-        body,
-        html {
+        body, html {
             height: 100%;
             background-color: #f4f7f6;
         }
@@ -97,26 +34,25 @@
         /* --- Sidebar (Kiri) --- */
         .sidebar {
             width: 260px;
-            background-color: #0a2e6c;
-            /* Biru tua IF */
+            background-color: #0a2e6c; /* Biru tua IF */
             color: white;
             display: flex;
             flex-direction: column;
-            position: fixed;
-            /* Sidebar tetap */
+            position: fixed; /* Sidebar tetap */
             height: 100%;
         }
 
         .sidebar-header {
-            padding: 24px 20px;
+            height: 90px; /* Tinggi tetap */
+            padding: 0 25px; 
             display: flex;
-            align-items: center;
+            align-items: center; /* Vertikal center */
             border-bottom: 1px solid #1e4a9c;
-            /* Garis pemisah tipis */
         }
 
         .sidebar-header img {
-            width: 50px;
+            width: 55px;
+            height: auto;
             margin-right: 15px;
         }
 
@@ -124,12 +60,10 @@
             display: flex;
             flex-direction: column;
         }
-
         .sidebar-header .logo-text span:first-child {
             font-weight: 700;
             font-size: 1.1rem;
         }
-
         .sidebar-header .logo-text span:last-child {
             font-size: 0.9rem;
             color: #bdc3c7;
@@ -141,9 +75,7 @@
             margin-top: 20px;
         }
 
-        .sidebar-nav li {
-            width: 100%;
-        }
+        .sidebar-nav li { width: 100%; }
 
         .sidebar-nav li a {
             display: flex;
@@ -156,21 +88,16 @@
         }
 
         .sidebar-nav li a i {
-            width: 30px;
-            /* Beri jarak untuk ikon */
+            width: 30px; /* Beri jarak untuk ikon */
             font-size: 1.1rem;
             margin-right: 10px;
         }
-
-        /* Style untuk link yang aktif */
+        
         .sidebar-nav li a.active {
-            background-color: #1e4a9c;
-            /* Biru lebih muda */
+            background-color: #1e4a9c; /* Biru lebih muda */
             font-weight: 700;
-            border-left: 5px solid #3498db;
-            /* Highlight biru cerah */
+            border-left: 5px solid #3498db; /* Highlight biru cerah */
             padding-left: 20px;
-            /* Sesuaikan padding agar rata */
         }
 
         .sidebar-nav li a:hover:not(.active) {
@@ -182,8 +109,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            margin-left: 260px;
-            /* Sesuaikan dengan lebar sidebar */
+            margin-left: 260px; /* Sesuaikan dengan lebar sidebar */
         }
 
         /* --- Topbar (Header Kanan) --- */
@@ -193,38 +119,34 @@
             border-bottom: 1px solid #ddd;
             padding: 20px 30px;
             display: flex;
-            justify-content: flex-end;
-            /* Posisikan ke kanan */
+            justify-content: flex-end; /* Posisikan ke kanan */
             align-items: center;
         }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-            text-align: right;
-        }
+        /* ... (Style untuk .user-info, .dropdown-menu, .user-info-trigger) ... */
+        .user-info { display: flex; align-items: center; text-align: right; }
+        .user-info .user-details { margin-right: 15px; }
+        .user-info .user-name { font-weight: 700; color: #333; }
+        .user-info .user-nrp { font-size: 0.9rem; color: #777; }
+        .user-info .user-avatar { width: 45px; height: 45px; border-radius: 50%; background-color: #0a2e6c; }
 
-        .user-info .user-details {
-            margin-right: 15px;
+        .user-info-trigger {
+            display: flex; align-items: center; background: none; 
+            border: none; cursor: pointer; padding: 5px;
+            border-radius: 8px; transition: background-color 0.2s;
         }
-
-        .user-info .user-name {
-            font-weight: 700;
-            color: #333;
+        .user-info-trigger:hover { background-color: #f0f0f0; }
+        .dropdown-menu {
+            position: absolute; top: 80px; right: 30px; background: white;
+            border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 1px solid #ddd; z-index: 50; min-width: 200px;
+            display: none; 
         }
-
-        .user-info .user-nrp {
-            font-size: 0.9rem;
-            color: #777;
-        }
-
-        .user-info .user-avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background-color: #0a2e6c;
-            /* Ganti dengan gambar jika ada */
-        }
+        .dropdown-menu[x-show] { display: block; }
+        .dropdown-menu a { display: block; padding: 12px 20px; text-decoration: none; color: #333; font-size: 1rem; transition: background-color 0.2s; }
+        .dropdown-menu a:hover { background-color: #f9f9f9; }
+        .dropdown-menu form a { color: #d9534f; }
+        .dropdown-menu form a:hover { background-color: #fdf2f2; }
 
         /* --- Konten (Slot) --- */
         .content-area {
@@ -246,43 +168,46 @@
             border-radius: 8px;
             border: 1px solid #e0e0e0;
             padding: 30px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
+
     </style>
 </head>
-
 <body>
-
+    
     <div class="layout-container">
 
         <nav class="sidebar">
             <div class="sidebar-header">
-                <img src="{{ asset('images/logo_layout.png') }}" alt="Logo IF">
+                <img src="{{ asset('images/logo-layout.png') }}" alt="Logo IF">
                 <div class="logo-text">
                     <span>Informatics</span>
                     <span>Ubaya</span>
                 </div>
             </div>
-
+            
             <ul class="sidebar-nav">
                 <li>
-                    <a href="{{ route('dosen.dashboard') }}"
-                        class="{{ request()->routeIs('dosen.dashboard') ? 'active' : '' }}">
+                    <a href="{{ route('dosen.dashboard') }}" 
+                       class="{{ request()->routeIs('dosen.dashboard') ? 'active' : '' }}">
                         <i class="fa-solid fa-house"></i>
-                        Dashboard
+                        Dashboard (Jadwal)
                     </a>
                 </li>
-               
-            
+                <li>
+                    <a href="{{ route('dosen.bimbingan.index') }}"
+                       class="{{ request()->routeIs('dosen.bimbingan.index') ? 'active' : '' }}">
+                        <i class="fa-solid fa-users"></i>
+                        Mahasiswa Bimbingan
+                    </a>
+                </li>
             </ul>
         </nav>
 
         <div class="main-wrapper">
 
             <header class="topbar">
-
                 <div class="user-info" x-data="{ open: false }">
-
                     <button @click="open = ! open" class="user-info-trigger">
                         <div class="user-details">
                             <div class="user-name">{{ Auth::user()->dosen->nama_lengkap ?? 'Nama Dosen' }}</div>
@@ -292,23 +217,21 @@
                     </button>
 
                     <div x-show="open" @click.outside="open = false" x-transition class="dropdown-menu">
-
                         <a href="{{ route('profile.edit') }}">
                             Profil Saya
                         </a>
-
                         <div style="border-top: 1px solid #eee;"></div>
-
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <a href="{{ route('logout') }}"
-                                onclick="event.preventDefault(); this.closest('form').submit();">
+                            <a href="{{ route('logout') }}" 
+                               onclick="event.preventDefault(); this.closest('form').submit();">
                                 Log Out
                             </a>
                         </form>
                     </div>
                 </div>
             </header>
+
             <main class="content-area">
                 {{ $slot }}
             </main>
@@ -318,5 +241,4 @@
     </div>
 
 </body>
-
 </html>

@@ -12,7 +12,6 @@
             color: white; background-color: #0a2e6c; border: none;
             border-radius: 5px; cursor: pointer; display: block; text-align: center;
         }
-        /* Tombol Cek Integritas Baru */
         .btn-integritas {
             padding: 5px 12px; font-size: 0.9rem; text-decoration: none;
             color: #0a2e6c; background-color: #eef5ff; border: 1px solid #0a2e6c;
@@ -46,11 +45,11 @@
                         <td>{{ \Illuminate\Support\Str::limit($lsta->tugasAkhir->judul, 40) }}</td>
                         <td>{{ \Carbon\Carbon::parse($lsta->jadwal)->format('d M Y, H:i') }}</td>
                         <td>{{ $lsta->ruangan }}</td>
-                        <td>
-                            <a href="{{ route('dosen.penilaian.show', ['type' => 'lsta', 'id' => $lsta->id]) }}" class="btn-penilaian">
+                        <td style="width: 25%;"> <a href="{{ route('dosen.penilaian.show', ['type' => 'lsta', 'id' => $lsta->id]) }}" class="btn-penilaian">
                                 <i class="fa-solid fa-file-pen"></i> Beri Nilai
                             </a>
-                            @if($lsta->pengajuanSidang) @foreach($lsta->pengajuanSidang->dokumen as $dokumen)
+                            @if($lsta->pengajuanSidang)
+                                @foreach($lsta->pengajuanSidang->dokumen as $dokumen)
                                     <a href="{{ route('integritas.show', $dokumen->id) }}" class="btn-integritas" target="_blank">
                                         <i class="fa-solid fa-shield-halved"></i> Cek {{ $dokumen->tipe_dokumen }}
                                     </a>
@@ -84,11 +83,11 @@
                         <td>{{ \Illuminate\Support\Str::limit($sidang->tugasAkhir->judul, 40) }}</td>
                         <td>{{ \Carbon\Carbon::parse($sidang->jadwal)->format('d M Y, H:i') }}</td>
                         <td>{{ $sidang->ruangan }}</td>
-                        <td>
-                            <a href="{{ route('dosen.penilaian.show', ['type' => 'sidang', 'id' => $sidang->id]) }}" class="btn-penilaian">
+                        <td style="width: 25%;"> <a href="{{ route('dosen.penilaian.show', ['type' => 'sidang', 'id' => $sidang->id]) }}" class="btn-penilaian">
                                 <i class="fa-solid fa-file-pen"></i> Beri Nilai
                             </a>
-                            @if($sidang->pengajuanSidang) @foreach($sidang->pengajuanSidang->dokumen as $dokumen)
+                            @if($sidang->pengajuanSidang)
+                                @foreach($sidang->pengajuanSidang->dokumen as $dokumen)
                                     <a href="{{ route('integritas.show', $dokumen->id) }}" class="btn-integritas" target="_blank">
                                         <i class="fa-solid fa-shield-halved"></i> Cek {{ $dokumen->tipe_dokumen }}
                                     </a>
@@ -103,34 +102,4 @@
         </table>
     </div>
 
-    <h1 class="content-title" style="margin-top: 30px;">Mahasiswa Bimbingan</h1>
-    <div class="content-box">
-        <table class="table-wrapper">
-            <thead>
-                <tr>
-                    <th>Nama Mahasiswa</th>
-                    <th>NRP</th>
-                    <th>Judul TA</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($mahasiswaBimbingan as $ta)
-                    <tr>
-                        <td>{{ $ta->mahasiswa->nama_lengkap }}</td>
-                        <td>{{ $ta->mahasiswa->nrp }}</td>
-                        <td>{{ \Illuminate\Support\Str::limit($ta->judul, 50) }}</td>
-                        <td>{{ $ta->status }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="4" style="text-align: center; color: #777;">
-                            Anda tidak memiliki mahasiswa bimbingan.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-</x-dosen-layout>
+    </x-dosen-layout>

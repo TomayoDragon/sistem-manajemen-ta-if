@@ -25,16 +25,33 @@ class SignatureService
 
     public function getConcatenatedFileContentsFromVerification(Request $request): string
     {
-        $contents = $request->file('buku_cek')->get() . 
-                    $request->file('khs_cek')->get() . 
-                    $request->file('transkrip_cek')->get();
+        $contents = $request->file('buku_cek')->get() .
+            $request->file('khs_cek')->get() .
+            $request->file('transkrip_cek')->get();
         return $contents;
+    }
+    public function verifySignature(string $signatureBiner, string $hashBiner, string $publicKeyBase64): bool
+    {
+        try {
+            // 1. Dekode Public Key dari Base64 ke biner mentah
+            $publicKey = base64_decode($publicKeyBase64);
+
+            // 2. Jalankan fungsi verifikasi Sodium (Ed25519)
+            // Ini akan mengembalikan 'true' HANYA JIKA:
+            // (A) Signature dibuat oleh Private Key yang sesuai
+            // (B) Hash file tidak berubah
+            return sodium_crypto_sign_verify_detached($signatureBiner, $hashBiner, $publicKey);
+
+        } catch (\Exception $e) {
+            // Jika terjadi error (misal: public key korup), anggap tidak valid
+            return false;
+        }
     }
 
     public function performCustomHash(string $content): array
     {
         $sha512_full_raw = hash('sha512', $content, true);
-        $blake2b_full_raw = sodium_crypto_generichash($content, '', 64); 
+        $blake2b_full_raw = sodium_crypto_generichash($content, '', 64);
 
         $sha512_32bytes = substr($sha512_full_raw, 0, 32);
         $blake2b_32bytes = substr($blake2b_full_raw, 0, 32);
@@ -57,11 +74,11 @@ class SignatureService
         }
 
         $privateKey = base64_decode(Crypt::decryptString($encryptedPrivateKey));
-        
+
         $signature = sodium_crypto_sign_detached($combinedHashRaw, $privateKey);
-        
+
         sodium_memzero($privateKey);
 
-        return $signature; 
+        return $signature;
     }
 }
