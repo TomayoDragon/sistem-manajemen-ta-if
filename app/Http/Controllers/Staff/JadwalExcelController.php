@@ -22,6 +22,8 @@ use App\Models\Mahasiswa;
 use App\Models\Dosen;
 use App\Models\PengajuanSidang;
 use App\Models\TugasAkhir;
+use App\Models\EventSidang; // <-- IMPORT MODEL BARU
+use App\Models\Periode; // <-- IMPORT MODEL BARU
 
 class JadwalExcelController extends Controller
 {
@@ -41,7 +43,7 @@ class JadwalExcelController extends Controller
     {
         // 1. Ambil semua pengajuan 'TERIMA' yang belum dijadwalkan
         $acceptedPengajuans = PengajuanSidang::where('status_validasi', 'TERIMA')
-                                ->doesntHave('lstas') // Kunci: Hanya yg belum punya LSTA/Sidang
+                                ->whereNull('event_sidang_id') // <-- Kunci: Belum masuk gelombang
                                 ->with('tugasAkhir.mahasiswa', 'tugasAkhir.dosenPembimbing1', 'tugasAkhir.dosenPembimbing2')
                                 ->get();
         
@@ -102,6 +104,7 @@ class JadwalExcelController extends Controller
 
     /**
      * Memproses file Excel yang di-upload menggunakan OpenSpout.
+     * (Sekarang menggunakan 'periodes' dan 'events_sidang')
      */
     public function processImport(Request $request)
     {
@@ -115,6 +118,21 @@ class JadwalExcelController extends Controller
 
             $header = []; $isHeader = true; $errors = []; $rowNumber = 1;
 
+            // --- LOGIKA BARU (POINT 4 ANDA) ---
+            // Secara otomatis pilih event sidang/lsta terdekat yang belum diadakan
+            // (Kita asumsikan event SIDANG TA yang aktif)
+            $activeEvent = EventSidang::whereHas('periode', function($q) {
+                                $q->where('is_active', true);
+                            })
+                            ->where('tipe', 'SIDANG_TA') 
+                            ->first();
+
+            if (!$activeEvent) {
+                throw new \Exception("Tidak ada Periode/Event Sidang yang aktif. Harap buat event baru.");
+            }
+            // --- AKHIR LOGIKA BARU ---
+
+
             foreach ($reader->getSheetIterator() as $sheet) {
                 foreach ($sheet->getRowIterator() as $row) {
                     if ($isHeader) {
@@ -122,7 +140,6 @@ class JadwalExcelController extends Controller
                         foreach ($cells as $cell) { $header[] = strtolower($cell->getValue()); }
                         $isHeader = false; continue;
                     }
-
                     $data = $this->mapRowData($row->getCells(), $header);
                     $rowNumber++;
                     
@@ -144,15 +161,20 @@ class JadwalExcelController extends Controller
                     if (!$mahasiswa) { $errors[] = "Baris $rowNumber: NRP $nrp tidak ditemukan."; continue; }
                     $tugasAkhir = $mahasiswa->tugasAkhirs()->latest()->first();
                     if (!$tugasAkhir) { $errors[] = "Baris $rowNumber: Mahasiswa $nrp tidak punya TA."; continue; }
-                    $pengajuan = $tugasAkhir->pengajuanSidangs()->where('status_validasi', 'TERIMA')->latest()->first();
-                    if (!$pengajuan) { $errors[] = "Baris $rowNumber: Berkas $nrp belum divalidasi 'TERIMA'."; continue; }
+                    
+                    // Cek pengajuan 'TERIMA' yang BELUM punya event
+                    $pengajuan = $tugasAkhir->pengajuanSidangs()
+                                        ->where('status_validasi', 'TERIMA')
+                                        ->whereNull('event_sidang_id') 
+                                        ->latest()
+                                        ->first();
+                    if (!$pengajuan) { $errors[] = "Baris $rowNumber: Berkas $nrp belum divalidasi 'TERIMA' atau sudah terjadwal."; continue; }
                     
                     $ketua = Dosen::where('nama_lengkap', 'LIKE', $namaKetua . '%')->first();
                     $sekretaris = Dosen::where('nama_lengkap', 'LIKE', $namaSekretaris . '%')->first();
                     if (!$ketua || !$sekretaris) { $errors[] = "Baris $rowNumber: Nama Dosen Penguji ($namaKetua / $namaSekretaris) tidak ditemukan di database."; continue; }
 
                     try {
-                        // OpenSpout mengembalikan objek DateTime untuk tanggal
                         $parsedTanggal = ($tanggal instanceof \DateTime) ? Carbon::instance($tanggal) : Carbon::createFromFormat('d/m/Y', $tanggal);
                         $startTime = explode('-', $jam)[0];
                         $parsedJadwal = $parsedTanggal->setTimeFromTimeString($startTime);
@@ -160,14 +182,27 @@ class JadwalExcelController extends Controller
                         $errors[] = "Baris $rowNumber: Format tanggal/jam salah ($tanggal, $jam)."; continue;
                     }
 
-                    Lsta::updateOrCreate(
-                        ['tugas_akhir_id' => $tugasAkhir->id, 'pengajuan_sidang_id' => $pengajuan->id],
-                        ['dosen_penguji_id' => $ketua->id, 'jadwal' => $parsedJadwal, 'ruangan' => $ruang, 'status' => 'TERJADWAL']
-                    );
-                    Sidang::updateOrCreate(
-                        ['tugas_akhir_id' => $tugasAkhir->id, 'pengajuan_sidang_id' => $pengajuan->id],
-                        ['dosen_penguji_ketua_id' => $ketua->id, 'dosen_penguji_sekretaris_id' => $sekretaris->id, 'jadwal' => $parsedJadwal, 'ruangan' => $ruang, 'status' => 'TERJADWAL']
-                    );
+                    // Buat Jadwal LSTA
+                    Lsta::create([
+                        'tugas_akhir_id' => $tugasAkhir->id,
+                        'pengajuan_sidang_id' => $pengajuan->id,
+                        'event_sidang_id' => $activeEvent->id, // <-- Tautkan ke Event
+                        'dosen_penguji_id' => $ketua->id, 
+                        'jadwal' => $parsedJadwal, 'ruangan' => $ruang, 'status' => 'TERJADWAL'
+                    ]);
+                    // Buat Jadwal Sidang
+                    Sidang::create([
+                        'tugas_akhir_id' => $tugasAkhir->id,
+                        'pengajuan_sidang_id' => $pengajuan->id,
+                        'event_sidang_id' => $activeEvent->id, // <-- Tautkan ke Event
+                        'dosen_penguji_ketua_id' => $ketua->id, 
+                        'dosen_penguji_sekretaris_id' => $sekretaris->id, 
+                        'jadwal' => $parsedJadwal, 'ruangan' => $ruang, 'status' => 'TERJADWAL'
+                    ]);
+
+                    // Kunci mahasiswa ini ke event
+                    $pengajuan->event_sidang_id = $activeEvent->id;
+                    $pengajuan->save();
                 }
             }
             $reader->close();

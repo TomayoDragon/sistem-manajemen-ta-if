@@ -59,19 +59,24 @@ class UserFactory extends Factory
      * Menambahkan state untuk membuat Tugas Akhir.
      * HARUS dipanggil SETELAH state 'mahasiswa()'.
      */
-    public function withTugasAkhir(): Factory
+   // ... (di dalam UserFactory.php)
+    
+    /**
+     * Menambahkan state untuk membuat Tugas Akhir.
+     * HARUS dipanggil SETELAH state 'mahasiswa()'.
+     */
+    public function withTugasAkhir($periodeId) // <-- TAMBAHKAN PARAMETER
     {
-        return $this->afterCreating(function (User $user) {
-            // Pastikan ini hanya berjalan jika user adalah mahasiswa
+        return $this->afterCreating(function (User $user) use ($periodeId) {
             if ($user->mahasiswa_id) {
-                // Ambil 2 ID Dosen secara acak dari database
                 $dosens = Dosen::inRandomOrder()->take(2)->pluck('id');
-
                 if ($dosens->count() == 2) {
                     TugasAkhir::factory()->create([
                         'mahasiswa_id' => $user->mahasiswa_id,
+                        'periode_id' => $periodeId, // <-- GUNAKAN PARAMETER
                         'dosen_pembimbing_1_id' => $dosens[0],
                         'dosen_pembimbing_2_id' => $dosens[1],
+                        // Status default 'Bimbingan' dari factory sudah benar
                     ]);
                 }
             }

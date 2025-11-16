@@ -8,6 +8,7 @@ class Lsta extends Model {
     protected $fillable = [
         'tugas_akhir_id',
         'pengajuan_sidang_id',
+        'event_sidang_id',
         'dosen_penguji_id',
         'jadwal',
         'ruangan',
@@ -23,7 +24,10 @@ class Lsta extends Model {
         return $this->belongsTo(Dosen::class, 'dosen_penguji_id');
     }
 
-   
+   public function eventSidang()
+    {
+        return $this->belongsTo(EventSidang::class, 'event_sidang_id');
+    }
     public function lembarPenilaians()
     {
         return $this->morphMany(LembarPenilaian::class, 'penilaian');

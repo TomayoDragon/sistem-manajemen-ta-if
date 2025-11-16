@@ -8,11 +8,19 @@ use Illuminate\Database\Eloquent\Model;
 class TugasAkhir extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'tugas_akhirs';
 
-    // ... (method relasi lain mungkin sudah ada di sini) ...
-
+    protected $fillable = [
+        'mahasiswa_id',
+        'periode_id', // <-- TAMBAHKAN INI
+        'judul',
+        'dosen_pembimbing_1_id',
+        'dosen_pembimbing_2_id',
+        'status',
+        'dosbing_1_approved_at', // <-- Ini dari logic Persetujuan Dosbing
+        'dosbing_2_approved_at', // <-- Ini dari logic Persetujuan Dosbing
+    ];
     /**
      * Relasi ke Dosen Pembimbing 1
      */
@@ -32,7 +40,7 @@ class TugasAkhir extends Model
     /**
      * Relasi ke semua berkas terkait TA ini
      */
-/**
+    /**
      * Mendapatkan semua paket pengajuan yang terkait dengan TA ini.
      * (Relasi One-to-Many)
      */
@@ -50,7 +58,7 @@ class TugasAkhir extends Model
         return $this->belongsTo(Mahasiswa::class, 'mahasiswa_id');
     }
     // --- AKHIR FUNGSI YANG HILANG ---
-public function lstas() // <-- Ganti nama jadi plural
+    public function lstas() // <-- Ganti nama jadi plural
     {
         return $this->hasMany(Lsta::class, 'tugas_akhir_id');
     }
@@ -61,5 +69,9 @@ public function lstas() // <-- Ganti nama jadi plural
     public function sidangs() // <-- Ganti nama jadi plural
     {
         return $this->hasMany(Sidang::class, 'tugas_akhir_id');
+    }
+    public function periode()
+    {
+        return $this->belongsTo(Periode::class, 'periode_id');
     }
 }

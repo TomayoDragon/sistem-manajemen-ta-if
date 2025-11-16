@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class PengajuanSidang extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'pengajuan_sidangs';
 
     /**
@@ -17,12 +17,13 @@ class PengajuanSidang extends Model
      */
     protected $fillable = [
         'tugas_akhir_id',
+        'event_sidang_id', // <-- TAMBAHKAN INI
         'status_validasi',
         'catatan_validasi',
         'validator_id',
         'validated_at',
     ];
-    
+
     // --- INI ADALAH FUNGSI YANG HILANG ---
     /**
      * Relasi: Pengajuan ini milik TA mana.
@@ -63,5 +64,9 @@ class PengajuanSidang extends Model
     public function dokumen()
     {
         return $this->hasMany(DokumenPengajuan::class, 'pengajuan_sidang_id');
+    }
+    public function eventSidang()
+    {
+        return $this->belongsTo(EventSidang::class, 'event_sidang_id');
     }
 }
